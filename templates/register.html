@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <style>
+        body {
+            background: linear-gradient(135deg, #4a90e2, #9013fe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 2.5rem;
+            max-width: 600px;
+            width: 100%;
+            backdrop-filter: blur(15px);
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #333;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .btn-primary {
+            background-color: #5c67f2;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #4a54e1;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .password-strength {
+            display: flex;
+            gap: 4px;
+            margin-top: 0.5rem;
+        }
+
+        .password-strength span {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: #6c757d;
+        }
+
+        .spinner-border {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-width: 0.2rem;
+        }
+
+        .back-to-login {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .text-muted {
+            color: #777;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+        <h2>Create Your Account</h2>
+        <form id="register-form" action="{{ url_for('register') }}" method="POST" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                {{ form.username(class="form-control", placeholder="Enter your username") }}
+                <div class="invalid-feedback">Please provide a valid username.</div>
+                <div id="usernameHelp" class="form-text">Your username should be unique.</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                {{ form.email(class="form-control", placeholder="Enter your email") }}
+                <div class="invalid-feedback">Please provide a valid email address.</div>
+                <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+            </div>
+
+            <div class="mb-3 position-relative">
+                <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                {{ form.password(class="form-control", placeholder="Enter your password") }}
+                <i class="bi bi-eye password-toggle" id="toggle-password"></i>
+                <div class="password-strength mt-2" id="password-strength"></div>
+                <div class="invalid-feedback">Your password must be at least 6 characters long.</div>
+                <div class="form-text">A strong password includes uppercase letters, lowercase letters, numbers, and symbols.</div>
+            </div>
+
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                <div id="loading-spinner" class="d-none text-center mt-3">
+                    <div class="spinner-border"></div>
+                </div>
+            </div>
+        </form>
+        <div class="back-to-login">
+            <a href="{{ url_for('login') }}" class="link-primary">Back to Login</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            'use strict';
+
+            const form = document.getElementById('register-form');
+            const spinner = document.getElementById('loading-spinner');
+            const passwordInput = document.getElementById('password');
+            const strengthIndicator = document.getElementById('password-strength');
+            const togglePassword = document.getElementById('toggle-password');
+
+            // Form submission
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            });
+
+            // Password strength meter
+            passwordInput.addEventListener('input', function () {
+                updateStrengthIndicator(getPasswordStrength(passwordInput.value));
+            });
+
+            // Toggle password visibility
+            togglePassword.addEventListener('click', function () {
+                const type = passwordInput.type === 'password' ? 'text' : 'password';
+                passwordInput.type = type;
+                togglePassword.classList.toggle('bi-eye-slash', type === 'text');
+            });
+
+            // Password strength calculation
+            function getPasswordStrength(password) {
+                let strength = 0;
+                if (password.length >= 6) strength++;
+                if (/[A-Z]/.test(password)) strength++;
+                if (/[a-z]/.test(password)) strength++;
+                if (/\d/.test(password)) strength++;
+                if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++;
+                return strength;
+            }
+
+            // Update strength indicator
+            function updateStrengthIndicator(strength) {
+                const colors = ['#dc3545', '#ffc107', '#28a745'];
+                strengthIndicator.innerHTML = '';
+                for (let i = 0; i < 5; i++) {
+                    const span = document.createElement('span');
+                    span.style.backgroundColor = i < strength ? colors[Math.min(strength - 1, 2)] : '#e9ecef';
+                    strengthIndicator.appendChild(span);
+                }
+            }
+        })();
+    </script>
+</body>
+
+</html>
