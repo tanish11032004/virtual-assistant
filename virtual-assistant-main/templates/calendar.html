@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <style>
+        body {
+            background: linear-gradient(to right, #e0f7fa, #ffecb3);
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            padding: 20px;
+        }
+
+        #calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid #ddd;
+        }
+
+        .day {
+            height: 100px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            position: relative; /* For positioning event indicators */
+            background: #f9f9f9; /* Light background for day cells */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .day:hover {
+            background-color: #e0f7fa; /* Light blue on hover */
+            transform: scale(1.05);
+        }
+
+        .event-day {
+            background-color: #ffeb3b;
+            border: 1px solid #ffc107;
+        }
+
+        .today {
+            background-color: #28a745;
+            color: white;
+            font-weight: bold;
+        }
+
+        .selected {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        .event-indicator {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ffc107;
+        }
+
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .form-select {
+            margin-right: 5px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background: #f1f1f1;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Reminder modal styling */
+        .modal-header {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+    </style>
+    <title>Calendar App</title>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Calendar</h1>
+        <div class="row mb-3">
+            <div class="col">
+                <select id="month" class="form-select"></select>
+            </div>
+            <div class="col">
+                <select id="year" class="form-select"></select>
+            </div>
+            <div class="col">
+                <button id="today-btn" class="btn btn-primary">Today</button>
+            </div>
+        </div>
+        <div id="calendar" class="row"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            const events = {};
+            const reminders = {}; // Store reminders
+            let currentYear = new Date().getFullYear();
+            let currentMonth = new Date().getMonth();
+
+            function populateMonthYear() {
+                const monthDropdown = $('#month');
+                const yearDropdown = $('#year');
+
+                for (let i = 0; i < 12; i++) {
+                    monthDropdown.append(new Option(new Date(0, i).toLocaleString('default', { month: 'long' }), i));
+                }
+                for (let i = 1900; i <= 2100; i++) {
+                    yearDropdown.append(new Option(i, i));
+                }
+
+                monthDropdown.val(currentMonth);
+                yearDropdown.val(currentYear);
+            }
+
+            function formatDate(year, month, day) {
+                return `${year}-${month + 1}-${day}`;
+            }
+
+            function showCalendar(year, month) {
+                $('#calendar').empty();
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+
+                // Fill in empty days for the start of the month
+                for (let i = 1; i < firstDay.getDay(); i++) {
+                    $('#calendar').append('<div class="day"></div>');
+                }
+
+                // Create day cells
+                for (let day = 1; day <= lastDay.getDate(); day++) {
+                    const dayDiv = $(`<div class="day">${day}</div>`);
+                    const selectedDate = formatDate(year, month, day);
+
+                    // Event indicator for days with events
+                    if (events[selectedDate]) {
+                        dayDiv.append('<div class="event-indicator"></div>');
+                        dayDiv.addClass('event-day');
+                    }
+                    if (day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()) {
+                        dayDiv.addClass('today');
+                    }
+
+                    // Use event delegation for better performance
+                    dayDiv.on('click', function () {
+                        selectDay(year, month, day);
+                    });
+
+                    $('#calendar').append(dayDiv);
+                }
+            }
+
+            function selectDay(year, month, day) {
+                const selectedDate = formatDate(year, month, day);
+                $('.selected').removeClass('selected');
+                $(this).addClass('selected');
+
+                if (events[selectedDate]) {
+                    alert(`Event on ${day} ${new Date(year, month).toLocaleString('default', { month: 'long' })} ${year}:\n${events[selectedDate]}`);
+                } else {
+                    const eventDetails = prompt(`Enter event for ${day} ${new Date(year, month).toLocaleString('default', { month: 'long' })} ${year}:\nEnter reminder time in minutes (leave blank for none):`);
+                    if (eventDetails) {
+                        const reminderTime = prompt(`Enter reminder time in minutes (or leave blank for none):`);
+                        events[selectedDate] = eventDetails;
+                        if (reminderTime) {
+                            reminders[selectedDate] = parseInt(reminderTime, 10);
+                        }
+                        showCalendar(year, month); // Refresh the calendar to show the event highlight
+                    }
+                }
+            }
+
+            function checkReminders() {
+                const now = new Date();
+                for (const date in reminders) {
+                    const reminderTime = reminders[date];
+                    const [year, month, day] = date.split('-').map(Number);
+                    const eventDate = new Date(year, month - 1, day);
+                    const reminderDate = new Date(eventDate.getTime() - reminderTime * 60000); // Subtract reminder time in milliseconds
+
+                    if (now >= reminderDate && now < eventDate) {
+                        alert(`Reminder: You have an event "${events[date]}" on ${eventDate.toLocaleDateString()}.`);
+                        delete reminders[date]; // Remove reminder after notifying
+                    }
+                }
+            }
+
+            $('#month, #year').on('change', function () {
+                currentYear = $('#year').val();
+                currentMonth = $('#month').val();
+                showCalendar(currentYear, currentMonth);
+            });
+
+            $('#today-btn').on('click', function () {
+                currentYear = new Date().getFullYear();
+                currentMonth = new Date().getMonth();
+                $('#year').val(currentYear);
+                $('#month').val(currentMonth);
+                showCalendar(currentYear, currentMonth);
+            });
+
+            // Initial population and calendar display
+            populateMonthYear();
+            showCalendar(currentYear, currentMonth);
+
+            // Check reminders every minute
+            setInterval(checkReminders, 60000);
+        });
+    </script>
+</body>
+
+</html>

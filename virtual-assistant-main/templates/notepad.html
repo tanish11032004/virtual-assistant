@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notepad</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Roboto', sans-serif;
+            /* Updated font */
+            transition: background-color 0.3s;
+        }
+
+        .dark-mode {
+            background-color: #181818;
+            color: #f0f2f5;
+        }
+
+        .notepad {
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 800px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
+            transition: box-shadow 0.3s, background-color 0.3s;
+        }
+
+        h2 {
+            font-weight: 700;
+            /* Bold for headings */
+        }
+
+        .dark-mode .notepad {
+            background-color: #2c2c2c;
+            border: 1px solid #444;
+        }
+
+        #noteContent {
+            height: 300px;
+            resize: none;
+            font-family: monospace;
+            border: 1px solid #ddd;
+            padding: 10px;
+            transition: border-color 0.3s;
+        }
+
+        #noteContent:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .btn {
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+            color: white;
+        }
+
+        .text-center {
+            margin-top: 20px;
+        }
+
+        #charCount {
+            font-weight: bold;
+        }
+
+        .form-control-inline {
+            width: auto;
+            display: inline-block;
+        }
+
+        /* Back link styles */
+        .back-link {
+            display: block;
+            margin-bottom: 15px;
+            font-size: 18px;
+            text-decoration: none;
+            color: #007bff;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: #0056b3;
+        }
+
+        /* Modal styles */
+        .modal-content {
+            border-radius: 8px;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* Sticky Notes */
+        .sticky-note {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .sticky-note:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .delete-note {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            color: red;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Dark mode button styles */
+        .dark-mode-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .dark-mode-toggle:hover {
+            background-color: #0056b3;
+        }
+
+        /* Button styles */
+        .modal-footer .btn-danger {
+            background-color: #dc3545;
+        }
+
+        .modal-footer .btn-danger:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="darkModeToggle" class="dark-mode-toggle">🌙 Dark Mode</button>
+    <div class="container notepad">
+        <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+        <h2 class="text-center">QuickNotes</h2>
+        <div class="mb-3 d-flex justify-content-center flex-wrap gap-2">
+            <button id="boldBtn" class="btn btn-outline-secondary" aria-label="Bold"><b>B</b></button>
+            <button id="italicBtn" class="btn btn-outline-secondary" aria-label="Italic"><i>I</i></button>
+            <button id="underlineBtn" class="btn btn-outline-secondary" aria-label="Underline"><u>U</u></button>
+            <select id="fontSelect" class="form-control-inline form-select">
+                <option value="">Font Style</option>
+                <option value="Arial">Arial</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Verdana">Verdana</option>
+            </select>
+            <select id="fontSizeSelect" class="form-control-inline form-select">
+                <option value="16" selected>16</option>
+                <option value="12">12</option>
+                <option value="14">14</option>
+                <option value="18">18</option>
+                <option value="20">20</option>
+                <option value="24">24</option>
+            </select>
+            <input type="color" id="textColor" class="form-control-inline" value="#000000">
+            <button id="textToSpeechBtn" class="btn btn-warning">🔊 Text to Speech</button>
+            <button id="searchReplaceBtn" class="btn btn-light" data-bs-toggle="modal"
+                data-bs-target="#searchReplaceModal">🔍 Search & Replace</button>
+            <button id="saveBtn" class="btn btn-info">💾 Save</button>
+            <button id="viewSavedBtn" class="btn btn-secondary" data-bs-toggle="modal"
+                data-bs-target="#viewSavedModal">📓 View Saved Notes</button>
+        </div>
+        <div id="noteContent" class="form-control" contenteditable="true" placeholder="Write your notes here..."></div>
+        <div class="text-center mt-3">
+            <button id="clearBtn" class="btn btn-danger">Clear Notes</button>
+            <button id="downloadBtn" class="btn btn-success">Download as File</button>
+        </div>
+        <div id="charCount" class="text-center mt-2">Character Count: 0</div>
+
+        <!-- Search and Replace Modal -->
+        <div id="searchReplaceModal" class="modal fade" tabindex="-1" aria-labelledby="searchReplaceLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="searchReplaceLabel">Search & Replace</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="searchTerm" class="form-label">Search Term</label>
+                            <input type="text" id="searchTerm" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="replaceTerm" class="form-label">Replace With</label>
+                            <input type="text" id="replaceTerm" class="form-control">
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="caseSensitive" class="form-check-input">
+                            <label for="caseSensitive" class="form-check-label">Case Sensitive</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" id="replaceBtn" class="btn btn-primary">Replace</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Saved Notes Modal -->
+        <div id="viewSavedModal" class="modal fade" tabindex="-1" aria-labelledby="viewSavedLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewSavedLabel">Saved Notes</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="savedNotesContainer" class="d-flex flex-wrap justify-content-start"></div>
+                        <div class="text-center mt-2">
+                            <button id="clearSavedBtn" class="btn btn-danger">Clear All Saved Notes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const noteContent = document.getElementById('noteContent');
+        const charCount = document.getElementById('charCount');
+        const savedNotesContainer = document.getElementById('savedNotesContainer');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+
+        function updateCharCount() {
+            charCount.innerText = `Character Count: ${noteContent.innerText.length}`;
+        }
+
+        function clearNotes() {
+            noteContent.innerHTML = '';
+            updateCharCount();
+        }
+
+        function downloadNotes() {
+            const notes = noteContent.innerText;
+            const blob = new Blob([notes], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'notes.txt';
+            link.click();
+        }
+
+        function saveNotes() {
+            const notes = noteContent.innerText;
+            if (notes.trim() === '') {
+                alert('Cannot save empty notes!');
+                return;
+            }
+            const savedNotes = JSON.parse(localStorage.getItem('savedNotes')) || [];
+            savedNotes.push(notes);
+            localStorage.setItem('savedNotes', JSON.stringify(savedNotes));
+            alert('Notes saved successfully!');
+            displaySavedNotes();
+        }
+
+        function displaySavedNotes() {
+            const savedNotes = JSON.parse(localStorage.getItem('savedNotes')) || [];
+            savedNotesContainer.innerHTML = '';
+
+            if (savedNotes.length === 0) {
+                savedNotesContainer.innerText = 'No saved notes found.';
+                return;
+            }
+
+            savedNotes.forEach((note, index) => {
+                const stickyNote = document.createElement('div');
+                stickyNote.className = 'sticky-note';
+                stickyNote.innerHTML = `<button class="delete-note" onclick="removeSavedNote(${index})">&times;</button><pre>${note}</pre>`;
+                savedNotesContainer.appendChild(stickyNote);
+            });
+        }
+
+        function clearSavedNotes() {
+            localStorage.removeItem('savedNotes');
+            displaySavedNotes();
+            alert('All saved notes cleared!');
+        }
+
+        function removeSavedNote(index) {
+            const savedNotes = JSON.parse(localStorage.getItem('savedNotes'));
+            savedNotes.splice(index, 1);
+            localStorage.setItem('savedNotes', JSON.stringify(savedNotes));
+            displaySavedNotes();
+        }
+
+        function applyFormatting(command) {
+            document.execCommand(command);
+        }
+
+        function changeFontStyle() {
+            noteContent.style.fontFamily = this.value;
+        }
+
+        function changeFontSize() {
+            noteContent.style.fontSize = this.value + 'px';
+        }
+
+        function changeTextColor() {
+            noteContent.style.color = this.value;
+        }
+
+        function searchAndReplace() {
+            const searchTerm = document.getElementById('searchTerm').value;
+            const replaceTerm = document.getElementById('replaceTerm').value;
+            const caseSensitive = document.getElementById('caseSensitive').checked;
+            let content = noteContent.innerHTML;
+
+            const regex = new RegExp(searchTerm, caseSensitive ? 'g' : 'gi');
+            content = content.replace(regex, replaceTerm);
+            noteContent.innerHTML = content;
+        }
+
+        function textToSpeech() {
+            const text = noteContent.innerText.trim();
+            if (text.length === 0) return;
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            document.querySelector('.notepad').classList.toggle('dark-mode');
+        }
+
+        noteContent.addEventListener('input', updateCharCount);
+        document.getElementById('clearBtn').addEventListener('click', clearNotes);
+        document.getElementById('downloadBtn').addEventListener('click', downloadNotes);
+        document.getElementById('saveBtn').addEventListener('click', saveNotes);
+        document.getElementById('viewSavedBtn').addEventListener('click', displaySavedNotes);
+        document.getElementById('clearSavedBtn').addEventListener('click', clearSavedNotes);
+        document.getElementById('boldBtn').addEventListener('click', () => applyFormatting('bold'));
+        document.getElementById('italicBtn').addEventListener('click', () => applyFormatting('italic'));
+        document.getElementById('underlineBtn').addEventListener('click', () => applyFormatting('underline'));
+        document.getElementById('fontSelect').addEventListener('change', changeFontStyle);
+        document.getElementById('fontSizeSelect').addEventListener('change', changeFontSize);
+        document.getElementById('textColor').addEventListener('input', changeTextColor);
+        document.getElementById('replaceBtn').addEventListener('click', searchAndReplace);
+        document.getElementById('textToSpeechBtn').addEventListener('click', textToSpeech);
+        darkModeToggle.addEventListener('click', toggleDarkMode);
+    </script>
+</body>
+
+</html>

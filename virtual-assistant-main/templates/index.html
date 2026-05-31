@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistant AI</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+            background-color: #e8eff6;
+            color: #333;
+        }
+
+        .navbar {
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(34, 193, 195, 0.9);
+            transition: background-color 0.5s, box-shadow 0.5s;
+            padding: 15px 30px;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .navbar.scrolled {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: white;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            transition: color 0.3s;
+        }
+
+        .navbar-brand img {
+            height: 40px;
+            margin-right: 10px;
+            transition: transform 0.3s;
+        }
+
+        .navbar-brand:hover img {
+            transform: scale(1.1);
+        }
+
+        .navbar-nav .nav-link {
+            color: white;
+            font-weight: 500;
+            margin: 0 15px;
+            border: 2px solid transparent;
+            transition: color 0.3s, border-color 0.3s;
+            padding: 10px 15px;
+            border-radius: 5px;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #ffcc00;
+            border-color: #ffcc00;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-link.btn {
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: background-color 0.3s;
+        }
+
+        .nav-link.btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .logs {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(49, 172, 241, 1) 0%, rgba(17, 103, 175, 1) 100%);
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.3);
+        }
+
+        .logs h1 {
+            font-size: 4rem;
+            font-weight: bold;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.6);
+            animation: slideIn 1s ease-in-out;
+        }
+
+        .logs p {
+            font-size: 1.5rem;
+            font-weight: 300;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        .btn-group a {
+            margin: 10px;
+            transition: transform 0.3s, background-color 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-group a:hover {
+            transform: scale(1.1);
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #007bff;
+        }
+
+        section {
+            padding: 80px 0;
+            position: relative;
+        }
+
+        #about {
+            background-color: #fff;
+            position: relative;
+            z-index: 1;
+        }
+
+        h2 {
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+            font-size: 2.5rem;
+            text-align: center;
+        }
+
+        .service-item {
+            text-align: center;
+            padding: 30px;
+            border-radius: 10px;
+            transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .service-item:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            background-color: #f9f9f9; /* Lighten background on hover */
+        }
+
+        .service-item h3 {
+            margin: 10px 0;
+            font-size: 1.6rem;
+            color: #007bff;
+        }
+
+        .service-item p {
+            margin: 0;
+            font-size: 1rem;
+            color: #555;
+        }
+
+        footer {
+            background-color: #003366;
+            color: #fff;
+            padding: 20px 0;
+            position: relative;
+            text-align: center;
+        }
+
+        footer p {
+            margin: 0;
+            color: #bbb;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .logs h1 {
+                font-size: 2.5rem;
+            }
+
+            .logs p {
+                font-size: 1.2rem;
+            }
+        }
+
+        .fade-in-on-scroll {
+            opacity: 0;
+            transition: opacity 1s ease-out;
+        }
+
+        .fade-in-on-scroll.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light" role="navigation" aria-label="Main navigation">
+        <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+            <img src="favicon/favicon.ico" alt="Logo">
+            Assistant AI
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link btn btn-light" href="#about">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-light" href="#services">Services</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-light" href="contact_support.html">Contact</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Logs Section -->
+    <header class="logs">
+        <div>
+            <h1>Project Assistant AI</h1>
+            <p>Automate your life with your virtual assistant</p>
+            <div class="btn-group">
+                <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Login</a>
+                <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg">Register</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- About Section -->
+    <section id="about" class="fade-in-on-scroll">
+        <div class="container">
+            <h2>About Us</h2>
+            <p>
+                At AI-Powered Virtual Assistant, we are committed to transforming the way you handle your daily tasks.
+                Our advanced assistant utilizes state-of-the-art natural language processing (NLP) techniques to
+                comprehend your needs and deliver personalized support.
+
+                Whether you need to set reminders, access information, or organize your schedule, our intuitive
+                interface guarantees a seamless experience across both web and mobile platforms.
+
+                We understand that your time is valuable, and our assistant is designed to help you save it by
+                automating repetitive tasks. With features like voice recognition and smart suggestions, you can
+                interact with your assistant effortlessly, making your daily routines more efficient and enjoyable.
+
+                Join us in embracing the future of productivity, where technology empowers you to focus on what truly
+                matters.
+            </p>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services">
+        <div class="container">
+            <h2>Our Services</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="service-item" id="calculator-item">
+                        <h3>Calculator</h3>
+                        <p>Perform calculations quickly and easily.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-item" id="chatbot-item">
+                        <h3>AI Chatbot</h3>
+                        <p>Get answers to your questions instantly.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-item" id="notepad-item">
+                        <h3>Notepad</h3>
+                        <p>Take notes and save your thoughts easily.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-item" id="calendar-item">
+                        <h3>Calendar</h3>
+                        <p>Manage your events and schedule with ease.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-item" id="translator-item">
+                        <h3>Translator</h3>
+                        <p>Translate text in real-time across multiple languages.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-item" id="activity-item">
+                        <h3>View Your Activity</h3>
+                        <p>Track your past activities and stay organized.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <div class="footer text-center">
+        &copy; 2024 Assistant AI. All rights reserved. <a href="terms.html">Terms</a> | <a href="privacy.html">Privacy</a>
+    </div>
+
+    <script>
+        document.getElementById('calculator-item').addEventListener('click', function () {
+            location.href = '{{ url_for('calculator') }}';
+        });
+        document.getElementById('chatbot-item').addEventListener('click', function () {
+            location.href = '{{ url_for('chat_bot') }}';
+        });
+        document.getElementById('notepad-item').addEventListener('click', function () {
+            location.href = '{{ url_for('notepad') }}';
+        });
+        document.getElementById('calendar-item').addEventListener('click', function () {
+            location.href = '{{ url_for('calendar') }}';
+        });
+        document.getElementById('translator-item').addEventListener('click', function () {
+            location.href = '{{ url_for('translator_page') }}';
+        });
+        document.getElementById('activity-item').addEventListener('click', function () {
+            location.href = '{{ url_for('activity') }}';
+        });
+
+        // Smooth scroll effect
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        document.querySelector('.navbar-brand').addEventListener('click', function () {
+            alert('Logo clicked!'); // You can replace this with a redirect if desired
+            // window.location.href = '{{ url_for('dashboard') }}';
+        });
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        window.addEventListener('scroll', function () {
+            const nav = document.querySelector('.navbar');
+            if (window.scrollY > 10) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+
+        // Fade-in effect for the "About Us" section
+        window.addEventListener('scroll', function () {
+            const sections = document.querySelectorAll('.fade-in-on-scroll');
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    section.classList.add('visible');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
